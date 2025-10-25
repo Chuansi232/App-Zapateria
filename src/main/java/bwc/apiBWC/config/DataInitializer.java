@@ -31,40 +31,50 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // Create roles
-        Role adminRole = new Role(null, "ROLE_ADMINISTRADOR");
-        Role userRole = new Role(null, "ROLE_VENDEDOR");
-        roleRepository.save(adminRole);
-        roleRepository.save(userRole);
+        // Create roles if they don't exist
+        if (roleRepository.findByName("ROLE_ADMINISTRADOR").isEmpty()) {
+            Role adminRole = new Role(null, "ROLE_ADMINISTRADOR");
+            roleRepository.save(adminRole);
+        }
+        if (roleRepository.findByName("ROLE_VENDEDOR").isEmpty()) {
+            Role userRole = new Role(null, "ROLE_VENDEDOR");
+            roleRepository.save(userRole);
+        }
 
-        // Create branches
-        Branch branch1 = new Branch(null, "Sucursal Principal", "Calle Principal 123", "123456789");
-        Branch branch2 = new Branch(null, "Sucursal Secundaria", "Calle Secundaria 456", "987654321");
-        branchRepository.save(branch1);
-        branchRepository.save(branch2);
+        // Create branches if they don't exist
+        if (branchRepository.count() == 0) {
+            Branch branch1 = new Branch(null, "Sucursal Principal", "Calle Principal 123", "123456789");
+            Branch branch2 = new Branch(null, "Sucursal Secundaria", "Calle Secundaria 456", "987654321");
+            branchRepository.save(branch1);
+            branchRepository.save(branch2);
+        }
 
-        // Create users
-        User admin = new User();
-        admin.setUsername("admin");
-        admin.setPassword(passwordEncoder.encode("admin123"));
-        Set<Role> adminRoles = new HashSet<>();
-        adminRoles.add(adminRole);
-        admin.setRoles(adminRoles);
-        Set<Branch> adminBranches = new HashSet<>();
-        adminBranches.add(branch1);
-        admin.setBranches(adminBranches);
-        userRepository.save(admin);
+        // Create users if they don't exist
+        if (userRepository.findByUsername("admin").isEmpty()) {
+            User admin = new User();
+            admin.setUsername("admin");
+            admin.setPassword(passwordEncoder.encode("admin123"));
+            Set<Role> adminRoles = new HashSet<>();
+            adminRoles.add(roleRepository.findByName("ROLE_ADMINISTRADOR").get());
+            admin.setRoles(adminRoles);
+            Set<Branch> adminBranches = new HashSet<>();
+            adminBranches.add(branchRepository.findAll().get(0));
+            admin.setBranches(adminBranches);
+            userRepository.save(admin);
+        }
 
-        User user = new User();
-        user.setUsername("vendedor");
-        user.setPassword(passwordEncoder.encode("vendedor123"));
-        Set<Role> userRoles = new HashSet<>();
-        userRoles.add(userRole);
-        user.setRoles(userRoles);
-        Set<Branch> userBranches = new HashSet<>();
-        userBranches.add(branch1);
-        userBranches.add(branch2);
-        user.setBranches(userBranches);
-        userRepository.save(user);
+        if (userRepository.findByUsername("vendedor").isEmpty()) {
+            User user = new User();
+            user.setUsername("vendedor");
+            user.setPassword(passwordEncoder.encode("vendedor123"));
+            Set<Role> userRoles = new HashSet<>();
+            userRoles.add(roleRepository.findByName("ROLE_VENDEDOR").get());
+            user.setRoles(userRoles);
+            Set<Branch> userBranches = new HashSet<>();
+            userBranches.add(branchRepository.findAll().get(0));
+            userBranches.add(branchRepository.findAll().get(1));
+            user.setBranches(userBranches);
+            userRepository.save(user);
+        }
     }
 }
