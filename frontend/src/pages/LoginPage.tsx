@@ -2,7 +2,7 @@
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LoginRequest } from '../types/request';
+import type { LoginRequest } from '../types/request';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import { useState } from 'react';

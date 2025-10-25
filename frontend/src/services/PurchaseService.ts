@@ -1,6 +1,6 @@
 
 import apiClient from './api';
-import { Purchase } from '../types';
+import type { Purchase } from '../types';
 
 /**
  * Servicio para gestionar las operaciones de compras a proveedores.

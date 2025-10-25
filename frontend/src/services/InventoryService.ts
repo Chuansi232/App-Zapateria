@@ -1,6 +1,6 @@
 
 import apiClient from './api';
-import { Stock, InventoryMovement } from '../types';
+import type { Stock, InventoryMovement } from '../types';
 
 /**
  * Servicio para gestionar las operaciones de inventario.

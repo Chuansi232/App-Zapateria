@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { Sale } from '../types';
+import type { Sale } from '../types';
 import SaleService from '../services/SaleService';
 import PageHeader from '../components/ui/PageHeader';
 import Button from '../components/ui/Button';
@@ -33,10 +33,22 @@ const SalesPage = () => {
 
   const columns = [
     { header: 'ID', accessor: 'id' as keyof Sale },
-    { header: 'Fecha', accessor: (item: Sale) => new Date(item.date).toLocaleDateString() },
-    { header: 'Cliente', accessor: (item: Sale) => item.customer.name },
-    { header: 'Sucursal', accessor: (item: Sale) => item.branch.name },
-    { header: 'Total', accessor: (item: Sale) => `$${item.total.toFixed(2)}` },
+    { 
+      header: 'Fecha', 
+      accessor: (item: Sale) => new Date(item.saleDate).toLocaleDateString() 
+    },
+    { 
+      header: 'Cliente', 
+      accessor: (item: Sale) => item.customer?.name || `ID: ${item.customerId}` 
+    },
+    { 
+      header: 'Sucursal', 
+      accessor: (item: Sale) => item.branch?.name || `ID: ${item.branchId}` 
+    },
+    { 
+      header: 'Total', 
+      accessor: (item: Sale) => `Q${item.totalAmount.toFixed(2)}` 
+    },
   ];
 
   if (isLoading) return <Spinner />;

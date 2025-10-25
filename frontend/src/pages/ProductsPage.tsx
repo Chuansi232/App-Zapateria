@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
-import { Product, Brand, Category, Size } from '../types';
+import type { Product, Brand, Category, Size } from '../types';
 import ProductService from '../services/ProductService';
 import PageHeader from '../components/ui/PageHeader';
 import Button from '../components/ui/Button';
@@ -24,7 +24,7 @@ const ProductsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<any>();
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<Product>();
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -55,9 +55,9 @@ const ProductsPage = () => {
     if (product) {
         reset({ 
             ...product, 
-            brand: product.brand.id, 
-            category: product.category.id, 
-            size: product.size.id 
+            brandId: product.brand?.id, 
+            categoryId: product.category?.id, 
+            sizeIds: product.sizes?.map(s => s.id) 
         });
     } else {
         reset({});
@@ -72,15 +72,14 @@ const ProductsPage = () => {
   };
 
   const onSubmit = async (data: any) => {
-    // La data de los selects viene como string, hay que convertirla a número y estructurarla
-    const formattedData: Partial<Product> = {
-        name: data.name,
-        description: data.description,
-        purchasePrice: data.purchasePrice,
-        salePrice: data.salePrice,
-        brand: { id: Number(data.brand) },
-        category: { id: Number(data.category) },
-        size: { id: Number(data.size) },
+    const formattedData = {
+      name: data.name,
+      description: data.description,
+      brandId: Number(data.brandId),
+      categoryId: Number(data.categoryId),
+      sizeIds: Array.isArray(data.sizeIds) 
+        ? data.sizeIds.map((id: string) => Number(id))
+        : [Number(data.sizeIds)]
     };
 
     const apiCall = selectedProduct
@@ -94,15 +93,15 @@ const ProductsPage = () => {
         fetchData();
         return 'Producto guardado con éxito';
       },
-      error: 'Ocurrió un error.',
+      error: (err) => `Error: ${err.response?.data?.message || err.message}`,
     });
   };
 
   const columns = [
     { header: 'Nombre', accessor: 'name' as keyof Product },
-    { header: 'Marca', accessor: (item: Product) => item.brand.name },
-    { header: 'Categoría', accessor: (item: Product) => item.category.name },
-    { header: 'Talla', accessor: (item: Product) => item.size.name },
+    { header: 'Marca', accessor: (item: Product) => item.brand?.name },
+    { header: 'Categoría', accessor: (item: Product) => item.category?.name },
+    { header: 'Talla', accessor: (item: Product) => item.sizes?.map(s => s.name).join(', ') },
     { header: 'Precio Venta', accessor: 'salePrice' as keyof Product },
     { header: 'Stock Total', accessor: 'stock' as keyof Product },
   ];
@@ -119,35 +118,74 @@ const ProductsPage = () => {
         columns={columns}
         data={products}
         onEdit={openModal}
-        onDelete={(product) => { /* Implementar borrado */ }}
+        onDelete={async (product) => {
+          if (window.confirm(`¿Estás seguro de que quieres eliminar el producto "${product.name}"?`)) {
+            toast.promise(ProductService.deleteProduct(product.id),
+              {
+                loading: 'Eliminando producto...',
+                success: () => {
+                  fetchData();
+                  return 'Producto eliminado con éxito';
+                },
+                error: (err) => `Error: ${err.response?.data?.message || err.message}`,
+              }
+            );
+          }
+        }}
       />
 
       <Modal isOpen={isModalOpen} onClose={closeModal} title={selectedProduct ? 'Editar Producto' : 'Nuevo Producto'}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <Input label="Nombre" {...register('name', { required: true })} />
+          <Input
+            label="Nombre"
+            {...register('name', { required: 'El nombre es requerido' })}
+            error={errors.name?.message as string}
+          />
           <Input label="Descripción" {...register('description')} />
-          <Input label="Precio de Compra" type="number" step="0.01" {...register('purchasePrice', { required: true, valueAsNumber: true })} />
-          <Input label="Precio de Venta" type="number" step="0.01" {...register('salePrice', { required: true, valueAsNumber: true })} />
-          
+
           <div>
-            <label>Marca</label>
-            <select {...register('brand', { required: true })} className="mt-1 block w-full p-2 border rounded">
-              {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+            <label className="block text-sm font-medium text-gray-700">Marca</label>
+            <select
+              {...register('brandId', { required: 'La marca es requerida' })}
+              className="mt-1 block w-full p-2 border rounded"
+            >
+              <option value="">Selecciona una marca</option>
+              {brands.map(b => (
+                <option key={b.id} value={b.id}>{b.name}</option>
+              ))}
             </select>
+            {errors.brandId && <p className="text-red-500 text-sm mt-1">{errors.brandId.message}</p>}
           </div>
 
           <div>
-            <label>Categoría</label>
-            <select {...register('category', { required: true })} className="mt-1 block w-full p-2 border rounded">
-              {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            <label className="block text-sm font-medium text-gray-700">Categoría</label>
+            <select
+              {...register('categoryId', { required: 'La categoría es requerida' })}
+              className="mt-1 block w-full p-2 border rounded"
+            >
+              <option value="">Selecciona una categoría</option>
+              {categories.map(c => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
             </select>
+            {errors.categoryId && <p className="text-red-500 text-sm mt-1">{errors.categoryId.message as string}</p>}
           </div>
 
           <div>
-            <label>Talla</label>
-            <select {...register('size', { required: true })} className="mt-1 block w-full p-2 border rounded">
-              {sizes.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+            <label className="block text-sm font-medium text-gray-700">
+              Tallas (Mantén Ctrl/Cmd para seleccionar múltiples)
+            </label>
+            <select
+              {...register('sizeIds', { required: 'Selecciona al menos una talla' })}
+              multiple
+              size={5}
+              className="mt-1 block w-full p-2 border rounded"
+            >
+              {sizes.map(s => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
             </select>
+            {errors.sizeIds && <p className="text-red-500 text-sm mt-1">{errors.sizeIds.message as string}</p>}
           </div>
 
           <div className="flex justify-end space-x-2">

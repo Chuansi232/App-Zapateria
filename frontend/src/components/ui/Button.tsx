@@ -1,5 +1,5 @@
 
-import { ButtonHTMLAttributes, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
 /**
  * Componente de botón reutilizable con estilos personalizables.

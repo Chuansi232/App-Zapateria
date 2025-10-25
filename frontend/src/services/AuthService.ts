@@ -1,7 +1,7 @@
 
 import apiClient from './api';
-import { JwtResponse } from '../types';
-import { LoginRequest, SignUpRequest } from '../types/request';
+import type { JwtResponse } from '../types';
+import type { LoginRequest, SignUpRequest } from '../types/request';
 
 /**
  * Servicio para gestionar la autenticación (login, registro).

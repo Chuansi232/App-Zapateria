@@ -9,7 +9,6 @@ import BranchesPage from '../pages/BranchesPage';
 import SalesPage from '../pages/SalesPage';
 import PurchasesPage from '../pages/PurchasesPage';
 import StockPage from '../pages/StockPage';
-import { Role } from '../types';
 
 /**
  * Componente de Layout Protegido

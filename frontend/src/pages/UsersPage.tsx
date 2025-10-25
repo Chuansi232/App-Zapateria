@@ -2,7 +2,9 @@
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
-import { User, Role } from '../types';
+import type { User } from '../types';
+import { Role } from '../types';
+
 import UserService from '../services/UserService';
 import PageHeader from '../components/ui/PageHeader';
 import Button from '../components/ui/Button';
@@ -15,13 +17,15 @@ import Spinner from '../components/ui/Spinner';
  * Página para la gestión de usuarios (CRUD).
  * Accesible solo para administradores.
  */
+type UserFormData = Omit<User, 'id'> & { password?: string };
+
 const UsersPage = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<Omit<User, 'id'>>();
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<UserFormData>();
 
   const fetchUsers = async () => {
     setIsLoading(true);
@@ -41,7 +45,7 @@ const UsersPage = () => {
 
   const openModal = (user: User | null = null) => {
     setSelectedUser(user);
-    reset(user || { username: '', email: '', roles: [Role.USER] });
+    reset(user || { username: '', email: '', roles: [Role.ALMACENISTA] });
     setIsModalOpen(true);
   };
 
@@ -51,7 +55,7 @@ const UsersPage = () => {
     reset();
   };
 
-  const onSubmit = async (data: Omit<User, 'id'>) => {
+  const onSubmit = async (data: UserFormData) => {
     // No enviar el password al actualizar, a menos que se haya implementado un campo para cambiarlo
     const userData = { ...data };
     if (selectedUser) {
@@ -81,7 +85,7 @@ const UsersPage = () => {
           fetchUsers();
           return 'Usuario eliminado con éxito';
         },
-        error: 'No se pudo eliminar el usuario.',
+        error: (err) => `Error: ${err.response?.data?.message || err.message}`,
       });
     }
   };
@@ -133,9 +137,9 @@ const UsersPage = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700">Roles</label>
             <select {...register('roles')} multiple className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                <option value={Role.ADMIN}>Administrador</option>
-                <option value={Role.SELLER}>Vendedor</option>
-                <option value={Role.USER}>Usuario</option>
+                <option value={Role.ADMINISTRADOR}>Administrador</option>
+                <option value={Role.VENDEDOR}>Vendedor</option>
+                <option value={Role.ALMACENISTA}>Usuario</option>
             </select>
           </div>
           <div className="flex justify-end space-x-2">

@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { Purchase } from '../types';
+import type { Purchase } from '../types';
 import PurchaseService from '../services/PurchaseService';
 import PageHeader from '../components/ui/PageHeader';
 import Button from '../components/ui/Button';
@@ -33,9 +33,18 @@ const PurchasesPage = () => {
 
   const columns = [
     { header: 'ID', accessor: 'id' as keyof Purchase },
-    { header: 'Fecha', accessor: (item: Purchase) => new Date(item.date).toLocaleDateString() },
-    { header: 'Proveedor', accessor: (item: Purchase) => item.supplier.name },
-    { header: 'Total', accessor: (item: Purchase) => `$${item.total.toFixed(2)}` },
+    { 
+      header: 'Fecha', 
+      accessor: (item: Purchase) => new Date(item.purchaseDate).toLocaleDateString() 
+    },
+    { 
+      header: 'Proveedor', 
+      accessor: (item: Purchase) => item.supplier?.name || `ID: ${item.supplierId}` 
+    },
+    { 
+      header: 'Total', 
+      accessor: (item: Purchase) => `Q${item.totalAmount.toFixed(2)}` 
+    },
   ];
 
   if (isLoading) return <Spinner />;

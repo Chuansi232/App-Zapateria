@@ -8,11 +8,22 @@ import axios from 'axios';
 // Crea una instancia de Axios con la URL base del backend.
 // Esta URL debe coincidir con el puerto donde corre tu backend de Spring Boot.
 const apiClient = axios.create({
-  baseURL: 'http://localhost:8080/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
 
 /**
  * Interceptor de peticiones.

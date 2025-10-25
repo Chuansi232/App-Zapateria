@@ -1,6 +1,6 @@
 
 import apiClient from './api';
-import { Sale } from '../types';
+import type { Sale } from '../types';
 
 /**
  * Servicio para gestionar las operaciones de ventas.

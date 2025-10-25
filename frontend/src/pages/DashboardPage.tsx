@@ -6,7 +6,7 @@ import StatCard from '../components/dashboard/StatCard';
 import SalesChart from '../components/dashboard/SalesChart';
 import LowStockTable from '../components/dashboard/LowStockTable';
 import DashboardService from '../services/DashboardService';
-import { DashboardStats } from '../types';
+import type { DashboardStats } from '../types';
 import { CurrencyDollarIcon, ArchiveBoxXMarkIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 
 /**

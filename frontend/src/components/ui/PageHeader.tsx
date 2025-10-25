@@ -1,5 +1,5 @@
 
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 /**
  * Cabecera estándar para cada página, con un título y un botón de acción opcional.

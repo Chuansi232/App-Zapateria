@@ -1,7 +1,9 @@
 
-import { createContext, useState, useEffect, useContext, ReactNode } from 'react';
-import { JwtResponse, User, Role } from '../types';
-import { LoginRequest } from '../types/request';
+import { createContext, useState, useEffect, useContext } from 'react';
+import type { ReactNode } from 'react';
+import { Role } from '../types';
+import type { JwtResponse, User } from '../types';
+import type { LoginRequest } from '../types/request';
 import AuthService from '../services/AuthService';
 
 /**
@@ -46,7 +48,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         id: userData.id, 
         username: userData.username, 
         email: userData.email, 
-        roles: userData.roles.map(role => role as Role) // Casting de string a enum Role
+        roles: userData.roles
       });
     }
   }, []);
@@ -58,7 +60,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         id: data.id, 
         username: data.username, 
         email: data.email, 
-        roles: data.roles.map(role => role as Role)
+        roles: data.roles
     };
     setUser(newUser);
     localStorage.setItem('user', JSON.stringify(data));
@@ -71,7 +73,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const isAuthenticated = !!token;
-  const isAdmin = user?.roles.includes(Role.ADMIN) ?? false;
+  const isAdmin = user?.roles.includes(Role.ADMINISTRADOR) ?? false;
 
   const value = {
     user,

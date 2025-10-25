@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
-import { Branch } from '../types';
+import type { Branch } from '../types';
 import BranchService from '../services/BranchService';
 import PageHeader from '../components/ui/PageHeader';
 import Button from '../components/ui/Button';
@@ -41,7 +41,7 @@ const BranchesPage = () => {
 
   const openModal = (branch: Branch | null = null) => {
     setSelectedBranch(branch);
-    reset(branch || { name: '', address: '' });
+    reset(branch || { name: '', address: '', state: true });
     setIsModalOpen(true);
   };
 
@@ -86,7 +86,20 @@ const BranchesPage = () => {
         columns={columns}
         data={branches}
         onEdit={openModal}
-        onDelete={(branch) => { /* Implementar borrado */ }}
+        onDelete={async (branch) => {
+          if (window.confirm(`¿Estás seguro de que quieres eliminar la sucursal "${branch.name}"?`)) {
+            toast.promise(BranchService.deleteBranch(branch.id),
+              {
+                loading: 'Eliminando sucursal...',
+                success: () => {
+                  fetchBranches();
+                  return 'Sucursal eliminada con éxito';
+                },
+                error: (err) => `Error: ${err.response?.data?.message || err.message}`,
+              }
+            );
+          }
+        }}
       />
 
       <Modal isOpen={isModalOpen} onClose={closeModal} title={selectedBranch ? 'Editar Sucursal' : 'Nueva Sucursal'}>

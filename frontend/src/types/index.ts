@@ -1,156 +1,166 @@
-
-/**
- * Tipos y enumeraciones para la aplicación.
- */
-
-// --- Autenticación y Usuarios ---
-
-export enum Role {
-  ADMIN = 'ROLE_ADMIN',
-  SELLER = 'ROLE_SELLER',
-  USER = 'ROLE_USER',
+export interface Sale {
+  id: number;
+  customerId?: number;
+  userId: number;
+  branchId: number;
+  saleDate: string; // ISO format
+  totalAmount: number;
+  documentStatusId: number;
+  saleDetails: SaleDetail[];
+  // Relaciones pobladas (solo para lectura)
+  customer?: Customer;
+  user?: User;
+  branch?: Branch;
+  documentStatus?: DocumentStatus;
 }
 
-export interface User {
-  id: number;
-  username: string;
-  email: string;
-  roles: Role[];
+export interface SaleDetail {
+  id?: number;
+  productId: number;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  // Relación poblada
+  product?: Product;
 }
 
-export interface JwtResponse {
-  token: string;
+export interface Purchase {
   id: number;
-  username: string;
-  email: string;
-  roles: string[];
+  supplierId: number;
+  userId: number;
+  branchId: number;
+  purchaseDate: string;
+  totalAmount: number;
+  documentStatusId: number;
+  paymentStatusId: number;
+  purchaseDetails: PurchaseDetail[];
+  // Relaciones pobladas
+  supplier?: Supplier;
+  user?: User;
+  branch?: Branch;
+  documentStatus?: DocumentStatus;
+  paymentStatus?: PaymentStatus;
 }
 
-// --- Entidades de Negocio ---
-
-export interface Branch {
-  id: number;
-  name: string;
-  address: string;
-  phone?: string;
-  state: boolean;
+export interface PurchaseDetail {
+  id?: number;
+  productId: number;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  product?: Product;
 }
 
 export interface Product {
   id: number;
   name: string;
   description: string;
-  purchasePrice: number;
-  salePrice: number;
-  stock: number;
-  state: boolean;
-  brand: Brand;
-  category: Category;
-  size: Size;
+  brandId?: number;
+  categoryId?: number;
+  sizeIds?: number[];
+  stock?: number;
+  // Relaciones pobladas
+  brand?: Brand;
+  category?: Category;
+  sizes?: Size[];
+  state?: boolean;
+}
+
+export interface Stock {
+  id: number;
+  productId: number;
+  branchId: number;
+  quantity: number;
+  // Relaciones pobladas
+  product?: Product;
+  branch?: Branch;
+}
+
+export interface DocumentStatus {
+  id: number;
+  name: string;
+}
+
+export interface PaymentStatus {
+  id: number;
+  name: string;
 }
 
 export interface Brand {
   id: number;
   name: string;
-  state: boolean;
 }
 
 export interface Category {
   id: number;
   name: string;
-  state: boolean;
 }
 
 export interface Size {
   id: number;
   name: string;
-  state: boolean;
 }
 
 export interface Customer {
   id: number;
   name: string;
-  lastName: string;
-  dni: string;
-  phone?: string;
-  address?: string;
+  address: string;
+  phone: string;
+  email: string;
+}
+
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  roles: string[];
+}
+
+export const Role = {
+  ADMINISTRADOR: 'ROLE_ADMINISTRADOR',
+  VENDEDOR: 'ROLE_VENDEDOR',
+  ALMACENISTA: 'ROLE_ALMACENISTA',
+} as const;
+
+export type Role = typeof Role[keyof typeof Role];
+
+export interface Branch {
+  id: number;
+  name: string;
+  address: string;
+  phone: string;
+  state?: boolean;
 }
 
 export interface Supplier {
   id: number;
   name: string;
-  ruc: string;
-  phone?: string;
-  address?: string;
+  contactPerson: string;
+  phone: string;
+  email: string;
+  address: string;
 }
 
-// --- Transacciones ---
-
-export interface Sale {
+export interface JwtResponse {
+  token: string;
+  type: string;
   id: number;
-  date: string;
-  total: number;
-  customer: Customer;
-  branch: Branch;
-  user: User;
-  details: SaleDetail[];
-}
-
-export interface SaleDetail {
-  id: number;
-  quantity: number;
-  price: number;
-  product: Product;
-}
-
-export interface Purchase {
-  id: number;
-  date: string;
-  total: number;
-  supplier: Supplier;
-  user: User;
-  details: PurchaseDetail[];
-}
-
-export interface PurchaseDetail {
-  id: number;
-  quantity: number;
-  price: number;
-  product: Product;
-}
-
-// --- Inventario ---
-
-export interface Stock {
-  id: number;
-  branch: Branch;
-  product: Product;
-  quantity: number;
+  username: string;
+  email: string;
+  roles: string[];
 }
 
 export interface InventoryMovement {
-  id: number;
-  date: string;
-  quantity: number;
-  type: 'IN' | 'OUT';
-  product: Product;
-  branch: Branch;
-}
-
-// --- Pagos ---
-
-export interface Payment {
     id: number;
     date: string;
-    amount: number;
-    paymentMethod: string;
-    supplier: Supplier;
+    quantity: number;
+    type: 'IN' | 'OUT';
+    product: Product;
+    branch: Branch;
 }
 
-// --- Dashboard ---
-
 export interface DashboardStats {
-  totalSales: number;
-  lowStockProducts: Product[];
-  recentMovements: InventoryMovement[];
+    totalSales: number;
+    lowStockProducts: Product[];
+    recentMovements: InventoryMovement[];
 }

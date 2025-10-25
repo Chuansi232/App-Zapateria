@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { Stock, Branch } from '../types';
+import type { Stock, Branch } from '../types';
 import InventoryService from '../services/InventoryService';
 import BranchService from '../services/BranchService';
 import PageHeader from '../components/ui/PageHeader';
@@ -52,9 +52,13 @@ const StockPage = () => {
   }, [selectedBranch]);
 
   const columns = [
-    { header: 'Producto', accessor: (item: Stock) => item.product.name },
-    { header: 'Marca', accessor: (item: Stock) => item.product.brand.name },
-    { header: 'Talla', accessor: (item: Stock) => item.product.size.name },
+    { header: 'Producto', accessor: (item: Stock) => item.product?.name || 'N/A' },
+    { header: 'Marca', accessor: (item: Stock) => item.product?.brand?.name || 'N/A' },
+    { 
+      header: 'Tallas', 
+      accessor: (item: Stock) => 
+        item.product?.sizes?.map(s => s.name).join(', ') || 'N/A'
+    },
     { header: 'Cantidad', accessor: 'quantity' as keyof Stock },
   ];
 

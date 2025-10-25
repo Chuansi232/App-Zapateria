@@ -10,7 +10,6 @@ import {
   ChartBarIcon 
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../context/AuthContext';
-import { Role } from '../../types';
 
 /**
  * Barra lateral de navegación.
@@ -30,21 +29,27 @@ const adminRoutes = [
   { name: 'Sucursales', to: '/branches', icon: BuildingStorefrontIcon },
 ];
 
-const NavItem = ({ to, icon: Icon, children }) => (
-    <NavLink
-      to={to}
-      end
-      className={({ isActive }) =>
-        `flex items-center px-4 py-2.5 text-sm font-medium rounded-md transition-colors ${
-          isActive
-            ? 'bg-blue-600 text-white'
-            : 'text-gray-200 hover:bg-blue-800 hover:text-white'
-        }`
-      }
-    >
-      <Icon className="h-5 w-5 mr-3" />
-      {children}
-    </NavLink>
+interface NavItemProps {
+  to: string;
+  icon: React.ComponentType<{ className?: string }>;
+  children: React.ReactNode;
+}
+
+const NavItem: React.FC<NavItemProps> = ({ to, icon: Icon, children }) => (
+  <NavLink
+    to={to}
+    end
+    className={({ isActive }) =>
+      `flex items-center px-4 py-2.5 text-sm font-medium rounded-md transition-colors ${
+        isActive
+          ? 'bg-blue-600 text-white'
+          : 'text-gray-200 hover:bg-blue-800 hover:text-white'
+      }`
+    }
+  >
+    <Icon className="h-5 w-5 mr-3" />
+    {children}
+  </NavLink>
 );
 
 const Sidebar = () => {

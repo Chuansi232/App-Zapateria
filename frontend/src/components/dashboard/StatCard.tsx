@@ -1,5 +1,5 @@
 
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 /**
  * Tarjeta para mostrar una estadística principal en el dashboard.

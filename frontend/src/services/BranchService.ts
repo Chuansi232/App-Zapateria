@@ -1,6 +1,6 @@
 
 import apiClient from './api';
-import { Branch } from '../types';
+import type { Branch } from '../types';
 
 /**
  * Servicio para gestionar las operaciones CRUD de sucursales.

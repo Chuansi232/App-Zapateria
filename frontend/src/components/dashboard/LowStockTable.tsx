@@ -1,5 +1,5 @@
 
-import { Product } from '../../types';
+import type { Product } from '../../types';
 
 /**
  * Tabla que muestra los productos con bajo nivel de stock.

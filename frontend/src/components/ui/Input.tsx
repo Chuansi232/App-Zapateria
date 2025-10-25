@@ -1,5 +1,5 @@
 
-import { InputHTMLAttributes } from 'react';
+import type { InputHTMLAttributes } from 'react';
 
 /**
  * Componente de campo de entrada reutilizable.

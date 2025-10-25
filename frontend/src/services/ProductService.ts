@@ -1,6 +1,6 @@
 
 import apiClient from './api';
-import { Product, Brand, Category, Size } from '../types';
+import type { Product, Brand, Category, Size } from '../types';
 
 /**
  * Servicio para gestionar las operaciones CRUD de productos y entidades relacionadas.
