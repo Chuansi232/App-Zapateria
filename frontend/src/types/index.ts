@@ -3,11 +3,10 @@ export interface Sale {
   customerId?: number;
   userId: number;
   branchId: number;
-  saleDate: string; // ISO format
+  saleDate: string;
   totalAmount: number;
   documentStatusId: number;
   saleDetails: SaleDetail[];
-  // Relaciones pobladas (solo para lectura)
   customer?: Customer;
   user?: User;
   branch?: Branch;
@@ -20,7 +19,6 @@ export interface SaleDetail {
   quantity: number;
   unitPrice: number;
   totalPrice: number;
-  // Relación poblada
   product?: Product;
 }
 
@@ -34,12 +32,24 @@ export interface Purchase {
   documentStatusId: number;
   paymentStatusId: number;
   purchaseDetails: PurchaseDetail[];
-  // Relaciones pobladas
-  supplier?: Supplier;
+  supplier?: SupplierInfo;
   user?: User;
   branch?: Branch;
-  documentStatus?: DocumentStatus;
-  paymentStatus?: PaymentStatus;
+  documentStatus?: StatusInfo;
+  paymentStatus?: StatusInfo;
+}
+
+export interface SupplierInfo {
+  id: number;
+  name: string;
+  contactName?: string;
+  phone?: string;
+  email?: string;
+}
+
+export interface StatusInfo {
+  id: number;
+  name: string;
 }
 
 export interface PurchaseDetail {
@@ -59,7 +69,8 @@ export interface Product {
   categoryId?: number;
   sizeIds?: number[];
   stock?: number;
-  // Relaciones pobladas
+  purchasePrice?: number;
+  salePrice?: number;
   brand?: Brand;
   category?: Category;
   sizes?: Size[];
@@ -71,7 +82,6 @@ export interface Stock {
   productId: number;
   branchId: number;
   quantity: number;
-  // Relaciones pobladas
   product?: Product;
   branch?: Branch;
 }
@@ -151,16 +161,30 @@ export interface JwtResponse {
 }
 
 export interface InventoryMovement {
-    id: number;
-    date: string;
-    quantity: number;
-    type: 'IN' | 'OUT';
-    product: Product;
-    branch: Branch;
+  id: number;
+  productId?: number;
+  branchId?: number;
+  movementTypeId?: number;
+  quantity: number;
+  movementDate: string;
+  userId?: number;
+  description?: string;
+  date?: string; // Alias para compatibilidad
+  type: 'IN' | 'OUT';
+  product?: Product;
+  branch?: Branch;
+  movementTypeName?: string;
 }
 
 export interface DashboardStats {
-    totalSales: number;
-    lowStockProducts: Product[];
-    recentMovements: InventoryMovement[];
+  totalSales: number;
+  lowStockProducts: Product[];
+  recentMovements: InventoryMovement[];
+  weeklySales?: SalesChartData[]; // 🆕 Añadido
+}
+
+export interface SalesChartData {
+  day: string;
+  amount: number;
+
 }

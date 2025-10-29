@@ -1,12 +1,5 @@
-
 import axios from 'axios';
 
-/**
- * Configuración central de Axios para las llamadas a la API.
- */
-
-// Crea una instancia de Axios con la URL base del backend.
-// Esta URL debe coincidir con el puerto donde corre tu backend de Spring Boot.
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
   headers: {
@@ -14,41 +7,40 @@ const apiClient = axios.create({
   },
 });
 
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('user');
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
-  }
-);
-
-/**
- * Interceptor de peticiones.
- * Se ejecuta antes de que cada petición sea enviada.
- * Su propósito es obtener el token JWT desde el localStorage y añadirlo
- * a la cabecera de autorización en cada llamada a la API.
- */
 apiClient.interceptors.request.use(
   (config) => {
-    // Intenta obtener los datos del usuario del localStorage.
     const userStored = localStorage.getItem('user');
+    console.log('User stored:', userStored);
+    
     if (userStored) {
-      // Parsea los datos y extrae el token.
-      const userData = JSON.parse(userStored);
-      const token = userData?.token;
-
-      // Si existe un token, lo añade a la cabecera 'Authorization'.
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+      try {
+        const userData = JSON.parse(userStored);
+        const token = userData?.token;
+        console.log('Token:', token);
+        
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+          console.log('Authorization header set:', config.headers.Authorization);
+        }
+      } catch (error) {
+        console.error('Error parsing user data:', error);
       }
     }
     return config;
   },
   (error) => {
-    // Maneja errores que ocurran durante la configuración de la petición.
+    return Promise.reject(error);
+  }
+);
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('API Error:', error.response?.status, error.response?.data);
+    if (error.response?.status === 401) {
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+    }
     return Promise.reject(error);
   }
 );

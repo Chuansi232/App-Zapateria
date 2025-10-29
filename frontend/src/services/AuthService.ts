@@ -1,7 +1,8 @@
 
 import apiClient from './api';
 import type { JwtResponse } from '../types';
-import type { LoginRequest, SignUpRequest } from '../types/request';
+import type { LoginRequest } from '../types/request/request';
+
 
 /**
  * Servicio para gestionar la autenticación (login, registro).
@@ -23,13 +24,14 @@ const login = (credentials: LoginRequest): Promise<JwtResponse> => {
  * @param userData - Datos del nuevo usuario.
  * @returns Una promesa que resuelve a un mensaje de éxito.
  */
-const signup = (userData: SignUpRequest): Promise<any> => {
-  return apiClient.post(`${API_URL}/signup`, userData).then(response => response.data);
+const register = (userData: LoginRequest): Promise<any> => {
+  return apiClient.post('/auth/signup', userData);
 };
+
 
 const AuthService = {
   login,
-  signup,
+  register,
 };
 
 export default AuthService;

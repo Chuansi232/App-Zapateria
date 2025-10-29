@@ -9,23 +9,28 @@ import BranchesPage from '../pages/BranchesPage';
 import SalesPage from '../pages/SalesPage';
 import PurchasesPage from '../pages/PurchasesPage';
 import StockPage from '../pages/StockPage';
+import Spinner from '../components/ui/Spinner';
+import UnauthorizedPage from '../pages/UnauthorizedPage';
 
-/**
- * Componente de Layout Protegido
- * Si el usuario está autenticado, renderiza el MainLayout con las páginas anidadas.
- * Si no, redirige a la página de login.
- */
 const ProtectedLayout = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Spinner />
+      </div>
+    );
+  }
+  
   return isAuthenticated ? <MainLayout /> : <Navigate to="/login" replace />;
 };
 
-/**
- * Componente para proteger rutas que requieren rol de Administrador.
- */
 const AdminRoute = () => {
     const { isAdmin } = useAuth();
-    return isAdmin ? <Outlet /> : <Navigate to="/" replace />;
+
+    // The parent ProtectedLayout already handles the initial loading state.
+    return isAdmin ? <Outlet /> : <UnauthorizedPage />;
 }
 
 const router = createBrowserRouter([
@@ -37,13 +42,10 @@ const router = createBrowserRouter([
     path: '/',
     element: <ProtectedLayout />,
     children: [
-      // Rutas para todos los usuarios autenticados
       { index: true, element: <DashboardPage /> },
       { path: 'stock', element: <StockPage /> },
       { path: 'sales', element: <SalesPage /> },
       { path: 'purchases', element: <PurchasesPage /> },
-      
-      // Rutas exclusivas para Administradores
       {
         element: <AdminRoute />,
         children: [

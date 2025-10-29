@@ -22,7 +22,17 @@
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    /* ✅ Aliases para imports limpios */
+    "baseUrl": "src",
+    "paths": {
+      "@types/*": ["types/*"],
+      "@components/*": ["components/*"],
+      "@pages/*": ["pages/*"],
+      "@services/*": ["services/*"],
+      "@context/*": ["context/*"]
+    }
   },
   "include": ["src"]
 }

@@ -1,4 +1,3 @@
-
 import type { ReactNode } from 'react';
 
 /**
@@ -13,14 +12,16 @@ interface StatCardProps {
 
 const StatCard = ({ title, value, icon }: StatCardProps) => {
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
-      <div>
-        <p className="text-sm font-medium text-gray-500">{title}</p>
-        <p className="text-3xl font-bold text-gray-800">{value}</p>
+    <div className="relative bg-white/10 backdrop-blur-lg border border-white/20 p-6 rounded-2xl shadow-lg flex items-center justify-between transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:bg-white/20 cursor-pointer overflow-hidden">
+      <div className="z-10">
+        <p className="text-sm font-medium text-white/70">{title}</p>
+        <p className="text-4xl font-bold text-white">{value}</p>
       </div>
-      <div className="bg-blue-100 text-blue-600 p-3 rounded-full">
+      <div className="z-10">
         {icon}
       </div>
+      {/* Efecto de brillo sutil */}
+      <div className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
     </div>
   );
 };

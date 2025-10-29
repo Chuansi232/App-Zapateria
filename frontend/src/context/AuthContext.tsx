@@ -1,14 +1,9 @@
-
 import { createContext, useState, useEffect, useContext } from 'react';
 import type { ReactNode } from 'react';
 import { Role } from '../types';
 import type { JwtResponse, User } from '../types';
-import type { LoginRequest } from '../types/request';
+import type { LoginRequest } from '../types/request/request';
 import AuthService from '../services/AuthService';
-
-/**
- * Contexto para manejar la autenticación en toda la aplicación.
- */
 
 interface AuthContextType {
   user: User | null;
@@ -17,11 +12,11 @@ interface AuthContextType {
   isAdmin: boolean;
   login: (credentials: LoginRequest) => Promise<void>;
   logout: () => void;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Hook para usar el contexto de autenticación
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -37,20 +32,26 @@ interface AuthProviderProps {
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Cargar el estado de autenticación desde localStorage al iniciar
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
-      const userData: JwtResponse = JSON.parse(storedUser);
-      setToken(userData.token);
-      setUser({ 
-        id: userData.id, 
-        username: userData.username, 
-        email: userData.email, 
-        roles: userData.roles
-      });
+      try {
+        const userData: JwtResponse = JSON.parse(storedUser);
+        setToken(userData.token);
+        setUser({ 
+          id: userData.id, 
+          username: userData.username, 
+          email: userData.email || '', 
+          roles: userData.roles
+        });
+      } catch (error) {
+        console.error('Error parsing stored user:', error);
+        localStorage.removeItem('user');
+      }
     }
+    setIsLoading(false);
   }, []);
 
   const login = async (credentials: LoginRequest) => {
@@ -59,7 +60,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     const newUser: User = { 
         id: data.id, 
         username: data.username, 
-        email: data.email, 
+        email: data.email || '', 
         roles: data.roles
     };
     setUser(newUser);
@@ -72,7 +73,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     localStorage.removeItem('user');
   };
 
-  const isAuthenticated = !!token;
+  const isAuthenticated = !!token && !!user;
   const isAdmin = user?.roles.includes(Role.ADMINISTRADOR) ?? false;
 
   const value = {
@@ -82,6 +83,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     isAdmin,
     login,
     logout,
+    isLoading,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
