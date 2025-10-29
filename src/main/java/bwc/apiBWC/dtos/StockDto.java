@@ -12,4 +12,8 @@ public class StockDto {
     private Long productId;
     private Long branchId;
     private int quantity;
+    
+    private ProductDto product;
+    
+    private BranchDto branch;
 }

@@ -12,4 +12,5 @@ public interface StockRepository extends JpaRepository<Stock, Long> {
     Optional<Stock> findByProductIdAndBranchId(Long productId, Long branchId);
     List<Stock> findByBranchId(Long branchId);
     List<Stock> findByProductId(Long productId);
+    List<Stock> findByQuantityLessThanEqual(int quantity);
 }

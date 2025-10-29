@@ -18,8 +18,10 @@ public class Branch {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
     private String address;
-
+    
     private String phone;
+    
+    @Column(name = "state")
+    private Boolean state = true;
 }

@@ -11,6 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/sales")
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class SaleController {
 
     @Autowired
@@ -18,8 +19,13 @@ public class SaleController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMINISTRADOR') or hasRole('VENDEDOR')")
-    public SaleDto createSale(@RequestBody SaleDto saleDto) {
-        return saleService.createSale(saleDto);
+    public ResponseEntity<SaleDto> createSale(@RequestBody SaleDto saleDto) {
+        try {
+            SaleDto createdSale = saleService.createSale(saleDto);
+            return ResponseEntity.ok(createdSale);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al crear la venta: " + e.getMessage());
+        }
     }
 
     @GetMapping

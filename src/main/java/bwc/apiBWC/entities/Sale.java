@@ -1,9 +1,7 @@
 package bwc.apiBWC.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -11,9 +9,12 @@ import java.util.List;
 
 @Entity
 @Table(name = "sales")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(of = "id")
+@ToString(exclude = {"customer", "user", "branch", "documentStatus", "saleDetails"})
 public class Sale {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -13,11 +13,17 @@ import java.util.List;
 @AllArgsConstructor
 public class SaleDto {
     private Long id;
+    
     private Long customerId;
-    private Long userId;
+    private Long userId; 
+    private Long documentStatusId; 
+
+    private String customerName; 
+    private String customerEmail; 
+    private String customerPhone; 
     private Long branchId;
     private LocalDateTime saleDate;
     private BigDecimal totalAmount;
-    private Long documentStatusId;
+
     private List<SaleDetailDto> saleDetails;
 }

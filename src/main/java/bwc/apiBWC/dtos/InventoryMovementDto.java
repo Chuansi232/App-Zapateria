@@ -18,4 +18,9 @@ public class InventoryMovementDto {
     private LocalDateTime movementDate;
     private Long userId;
     private String description;
+    
+    // Información completa para el dashboard
+    private ProductDto product;
+    private BranchDto branch;
+    private String movementTypeName;
 }

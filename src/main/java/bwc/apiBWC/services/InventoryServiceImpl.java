@@ -1,6 +1,8 @@
 package bwc.apiBWC.services;
 
+import bwc.apiBWC.dtos.BranchDto;
 import bwc.apiBWC.dtos.InventoryMovementDto;
+import bwc.apiBWC.dtos.ProductDto;
 import bwc.apiBWC.dtos.StockDto;
 import bwc.apiBWC.entities.*;
 import bwc.apiBWC.exceptions.ResourceNotFoundException;
@@ -21,12 +23,15 @@ public class InventoryServiceImpl implements InventoryService {
     private final ProductRepository productRepository;
     private final BranchRepository branchRepository;
     private final MovementTypeRepository movementTypeRepository;
-
-    @Autowired
     private final UserRepository userRepository;
 
     @Autowired
-    public InventoryServiceImpl(InventoryMovementRepository inventoryMovementRepository, StockRepository stockRepository, ProductRepository productRepository, BranchRepository branchRepository, MovementTypeRepository movementTypeRepository, UserRepository userRepository) {
+    public InventoryServiceImpl(InventoryMovementRepository inventoryMovementRepository, 
+                               StockRepository stockRepository, 
+                               ProductRepository productRepository, 
+                               BranchRepository branchRepository, 
+                               MovementTypeRepository movementTypeRepository, 
+                               UserRepository userRepository) {
         this.inventoryMovementRepository = inventoryMovementRepository;
         this.stockRepository = stockRepository;
         this.productRepository = productRepository;
@@ -57,13 +62,16 @@ public class InventoryServiceImpl implements InventoryService {
         movement.setDescription(inventoryMovementDto.getDescription());
 
         movement = inventoryMovementRepository.save(movement);
-        updateStock(product.getId(), branch.getId(), movement.getQuantity(), movementType.getName());
+        
+        // ✅ NO actualizar stock aquí porque ya se hace en PurchaseServiceImpl y SaleServiceImpl
+        // Solo registrar el movimiento para historial
 
-        return convertToDto(movement);
+        return convertMovementToDto(movement);
     }
 
-
-    private void updateStock(Long productId, Long branchId, int quantity, String movementType) {
+    // ✅ MÉTODO PÚBLICO para actualizar stock (usado por otros servicios si es necesario)
+    @Transactional
+    public void updateStockDirect(Long productId, Long branchId, int quantity, String operation) {
         Stock stock = stockRepository.findByProductIdAndBranchId(productId, branchId)
             .orElseGet(() -> {
                 Stock newStock = new Stock();
@@ -75,28 +83,30 @@ public class InventoryServiceImpl implements InventoryService {
                 return newStock;
             });
 
-        switch (movementType) {
+        switch (operation.toUpperCase()) {
+            case "ADD":
             case "ENTRADA":
             case "AJUSTE_POSITIVO":
             case "TRANSFERENCIA_ENTRADA":
                 stock.setQuantity(stock.getQuantity() + quantity);
                 break;
+            case "SUBTRACT":
             case "SALIDA":
             case "AJUSTE_NEGATIVO":
             case "TRANSFERENCIA_SALIDA":
                 int newQuantity = stock.getQuantity() - quantity;
                 if (newQuantity < 0) {
-                    throw new IllegalStateException("Stock insuficiente para el producto ID: " + productId);
+                    throw new IllegalStateException("Stock insuficiente para el producto ID: " + productId + " en sucursal ID: " + branchId);
                 }
                 stock.setQuantity(newQuantity);
                 break;
             default:
-                throw new IllegalArgumentException("Tipo de movimiento no válido: " + movementType);
+                throw new IllegalArgumentException("Operación no válida: " + operation);
         }
         stockRepository.save(stock);
     }
 
-    private InventoryMovementDto convertToDto(InventoryMovement movement) {
+    private InventoryMovementDto convertMovementToDto(InventoryMovement movement) {
         InventoryMovementDto dto = new InventoryMovementDto();
         dto.setId(movement.getId());
         dto.setProductId(movement.getProduct().getId());
@@ -113,14 +123,14 @@ public class InventoryServiceImpl implements InventoryService {
     public StockDto getStockByProductAndBranch(Long productId, Long branchId) {
         Stock stock = stockRepository.findByProductIdAndBranchId(productId, branchId)
                 .orElseThrow(() -> new ResourceNotFoundException("Stock not found for product id: " + productId + " and branch id: " + branchId));
-        return convertToDto(stock);
+        return convertStockToDto(stock);
     }
 
     @Override
     public List<StockDto> getStockByBranch(Long branchId) {
         List<Stock> stockList = stockRepository.findByBranchId(branchId);
         return stockList.stream()
-                .map(this::convertToDto)
+                .map(this::convertStockToDto)
                 .collect(Collectors.toList());
     }
 
@@ -128,16 +138,67 @@ public class InventoryServiceImpl implements InventoryService {
     public List<StockDto> getTotalStockByProduct(Long productId) {
         List<Stock> stockList = stockRepository.findByProductId(productId);
         return stockList.stream()
-                .map(this::convertToDto)
+                .map(this::convertStockToDto)
                 .collect(Collectors.toList());
     }
 
-    private StockDto convertToDto(Stock stock) {
+    private StockDto convertStockToDto(Stock stock) {
         StockDto dto = new StockDto();
         dto.setId(stock.getId());
         dto.setProductId(stock.getProduct() != null ? stock.getProduct().getId() : null);
         dto.setBranchId(stock.getBranch() != null ? stock.getBranch().getId() : null);
         dto.setQuantity(stock.getQuantity());
+        
+        // Agregar información completa del producto
+        if (stock.getProduct() != null) {
+            ProductDto productDto = new ProductDto();
+            Product product = stock.getProduct();
+            
+            productDto.setId(product.getId());
+            productDto.setName(product.getName());
+            productDto.setDescription(product.getDescription());
+            productDto.setPurchasePrice(product.getPurchasePrice());
+            productDto.setSalePrice(product.getSalePrice());
+            
+            if (product.getBrand() != null) {
+                ProductDto.BrandDto brandDto = new ProductDto.BrandDto();
+                brandDto.setId(product.getBrand().getId());
+                brandDto.setName(product.getBrand().getName());
+                productDto.setBrand(brandDto);
+            }
+            
+            if (product.getCategory() != null) {
+                ProductDto.CategoryDto categoryDto = new ProductDto.CategoryDto();
+                categoryDto.setId(product.getCategory().getId());
+                categoryDto.setName(product.getCategory().getName());
+                productDto.setCategory(categoryDto);
+            }
+            
+            if (product.getSizes() != null && !product.getSizes().isEmpty()) {
+                productDto.setSizes(product.getSizes().stream()
+                    .map(size -> {
+                        ProductDto.SizeDto sizeDto = new ProductDto.SizeDto();
+                        sizeDto.setId(size.getId());
+                        sizeDto.setName(size.getName());
+                        return sizeDto;
+                    })
+                    .collect(Collectors.toSet()));
+            }
+            
+            dto.setProduct(productDto);
+        }
+        
+        // Agregar información de la sucursal
+        if (stock.getBranch() != null) {
+            BranchDto branchDto = new BranchDto();
+            branchDto.setId(stock.getBranch().getId());
+            branchDto.setName(stock.getBranch().getName());
+            branchDto.setAddress(stock.getBranch().getAddress());
+            branchDto.setPhone(stock.getBranch().getPhone());
+            branchDto.setState(stock.getBranch().getState());
+            dto.setBranch(branchDto);
+        }
+        
         return dto;
     }
 }

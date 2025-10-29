@@ -35,6 +35,10 @@ public class BranchController {
     @PreAuthorize("hasRole('ADMINISTRADOR')")
     public BranchDto createBranch(@RequestBody BranchDto branchDto) {
         Branch branch = modelMapper.map(branchDto, Branch.class);
+        // Asegurarse de que state tenga un valor por defecto
+        if (branch.getState() == null) {
+            branch.setState(true);
+        }
         Branch savedBranch = branchRepository.save(branch);
         return modelMapper.map(savedBranch, BranchDto.class);
     }
@@ -52,9 +56,16 @@ public class BranchController {
     public BranchDto updateBranch(@PathVariable Long id, @RequestBody BranchDto branchDto) {
         Branch branch = branchRepository.findById(id)
                 .orElseThrow(() -> new bwc.apiBWC.exceptions.ResourceNotFoundException("Branch not found with id: " + id));
+        
         branch.setName(branchDto.getName());
         branch.setAddress(branchDto.getAddress());
         branch.setPhone(branchDto.getPhone());
+        
+        // Actualizar el estado correctamente
+        if (branchDto.getState() != null) {
+            branch.setState(branchDto.getState());
+        }
+        
         Branch updatedBranch = branchRepository.save(branch);
         return modelMapper.map(updatedBranch, BranchDto.class);
     }
@@ -62,7 +73,9 @@ public class BranchController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<?> deleteBranch(@PathVariable Long id) {
-        branchRepository.deleteById(id);
+        Branch branch = branchRepository.findById(id)
+                .orElseThrow(() -> new bwc.apiBWC.exceptions.ResourceNotFoundException("Branch not found with id: " + id));
+        branchRepository.delete(branch);
         return ResponseEntity.ok().build();
     }
 }
